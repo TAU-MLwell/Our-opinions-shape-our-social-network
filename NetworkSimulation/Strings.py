@@ -1,0 +1,55 @@
+str_not_zero_edges_count = 'not_zero_edges_count'
+str_thresh_edges_count = 'thresh_edges_count'
+str_thresh_total_weight = 'thresh_total_weight'
+
+str_total_mono_count = 'total_mono_count'
+str_thresh_total_mono_count = 'thresh_total_mono_count'
+str_total_colorful_count = 'total_colorful_count'
+str_thresh_total_colorful_count = 'thresh_total_colorful_count'
+str_total_mono_per = 'total_mono_per'
+str_thresh_total_mono_per = 'thresh_total_mono_pÓer'
+str_total_colorful_per = 'total_colorful_per'
+str_thresh_total_colorful_per = 'thresh_total_colorful_per'
+str_total_mono_weight = 'total_mono_weight'
+str_thresh_total_mono_weight = 'thresh_total_mono_weight'
+str_total_colorful_weight = 'total_colorful_weight'
+str_thresh_total_colorful_weight = 'str_thresh_total_colorful_weight'
+
+str_nodes_total_out_sum = 'nodes_out_sum'
+str_thresh_nodes_total_out_sum = 'thresh_nodes_total_out_sum'
+str_thresh_nodes_total_in_sum = 'thresh_nodes_total_in_sum'
+str_nodes_out_mono_sum = 'nodes_total_out_mono_sum'
+str_thresh_nodes_out_mono_sum = 'thresh_nodes_total_out_mono_sum'
+str_nodes_out_colorful_sum = 'nodes_total_out_colorful_sum'
+str_thresh_nodes_out_colorful_sum = 'thresh_nodes_total_out_colorful_sum'
+str_nodes_in_mono_sum = 'nodes_total_in_mono_sum'
+str_thresh_nodes_in_mono_sum = 'thresh_nodes_total_in_mono_sum'
+str_nodes_in_colorful_sum = 'nodes_total_in_colorful_sum'
+str_thresh_nodes_in_colorful_sum = 'thresh_nodes_total_in_colorful_sum'
+
+str_nodes_with_mono_view_count = 'nodes_with_mono_view'
+str_thresh_nodes_with_mono_view_count = 'threshold_nodes_with_mono_view'
+str_nodes_with_colorful_view_count = 'nodes_with_colorful_view'
+str_thresh_nodes_with_colorful_view_count = 'threshold_nodes_with_colorful_view'
+
+str_nodes_total_out_sum_sorted = 'nodes_total_out_sum_sorted'
+str_nodes_entropy_sorted = 'nodes_entropy_sorted'
+
+
+str_mat_norm = 'mat_norm'
+
+str_local_disagreement = 'local_dis'
+str_global_disagreement = 'global_dis'
+str_polarization = 'polarization'
+str_expressed_opinions = 'expressed_opinions'
+
+str_edge_weight = 'edge_weight'
+str_eig_val = 'eig_val'
+str_eig_vec = 'eig_vec'
+
+str_nodes_mix = 'nodes_mix'
+
+str_model_type_basic = 'basic'
+str_model_type_multiple_opinions = 'multiple_opinions'
+str_model_type_multiple_topics = 'multiple_topics'
+str_model_type_continuous_opinions = 'continuous_opinions'
