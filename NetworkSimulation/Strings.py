@@ -35,21 +35,14 @@ str_thresh_nodes_with_colorful_view_count = 'threshold_nodes_with_colorful_view'
 str_nodes_total_out_sum_sorted = 'nodes_total_out_sum_sorted'
 str_nodes_entropy_sorted = 'nodes_entropy_sorted'
 
-
 str_mat_norm = 'mat_norm'
 
 str_local_disagreement = 'local_dis'
 str_global_disagreement = 'global_dis'
-str_polarization = 'polarization'
-str_expressed_opinions = 'expressed_opinions'
 
 str_edge_weight = 'edge_weight'
 str_eig_val = 'eig_val'
 str_eig_vec = 'eig_vec'
 
-str_nodes_mix = 'nodes_mix'
-
-str_model_type_basic = 'basic'
-str_model_type_multiple_opinions = 'multiple_opinions'
-str_model_type_multiple_topics = 'multiple_topics'
-str_model_type_continuous_opinions = 'continuous_opinions'
+str_nodes_distance_feed_mean = 'nodes_mix'
+str_nodes_feed_mean = 'nodes_feed_mean'

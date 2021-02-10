@@ -25,17 +25,17 @@ def calc_total_mono_weight(weights_mat, mono_edges_mat):
     return mono_total_weights
 
 
-def threshold_num_of_nodes_with_mono_view(adj_mat, nodes_colors, threshold):
+def threshold_num_of_nodes_with_mono_view(adj_mat, nodes_opinions, threshold):
     mono_count = 0
     mono_nodes = []
     colorful_count = 0
     colorful_nodes = []
     for i in range(len(adj_mat)):
-        curr_node_color = nodes_colors[i]
+        curr_node_color = nodes_opinions[i]
         in_edges = adj_mat[:, i].flatten()
         above_thresh_indexes = np.where(in_edges > threshold)[0]
-        is_all_above_thresh_mono = all(curr_node_color == nodes_colors[node] for node in above_thresh_indexes)
-        is_all_above_thresh_colorful = all(curr_node_color != nodes_colors[node] for node in above_thresh_indexes)
+        is_all_above_thresh_mono = all(curr_node_color == nodes_opinions[node] for node in above_thresh_indexes)
+        is_all_above_thresh_colorful = all(curr_node_color != nodes_opinions[node] for node in above_thresh_indexes)
         if is_all_above_thresh_mono:
             mono_nodes.append(i)
             mono_count += 1
@@ -52,13 +52,13 @@ def calculate_edges_type_perc(mono_count, colorful_count, not_zero_edges):
     return mono_per, colorful_per
 
 
-def num_of_nodes_with_mono_view(adj_mat, nodes_colors):
+def num_of_nodes_with_mono_view(adj_mat, nodes_opinions):
     count = 0
     mono_view_nodes = []
-    for idx, node in enumerate(nodes_colors):
-        node_color = nodes_colors[idx]
+    for idx, node in enumerate(nodes_opinions):
+        node_color = nodes_opinions[idx]
         friends_ind = np.where(adj_mat[:, idx] > 0.0)[0]
-        if all(node_color == nodes_colors[friend] for friend in friends_ind):
+        if all(node_color == nodes_opinions[friend] for friend in friends_ind):
             mono_view_nodes.append(idx)
             count += 1
     return count
@@ -70,12 +70,14 @@ def nodes_degree_histogram(G):
     deg, cnt = zip(*degreeCount.items())
     fig, ax = plt.subplots()
     plt.bar(deg, cnt, width=0.80, color="b")
+
     plt.title("Degree Histogram")
     plt.ylabel("Count")
     plt.xlabel("Degree")
     ax.set_xticks([d + 0.4 for d in deg])
     ax.set_xticklabels(deg)
     plt.show()
+
     return degreeCount
 
 
@@ -87,6 +89,7 @@ def nodes_out_degree_histogram(adj_mat):
     deg, cnt = zip(*degreeCount.items())
     fig, ax = plt.subplots()
     plt.bar(deg, cnt, width=0.80, color="b")
+
     plt.title("Degree Histogram")
     plt.ylabel("Count")
     plt.xlabel("Degree")
@@ -98,23 +101,23 @@ def nodes_out_degree_histogram(adj_mat):
 def calc_nodes_entropy_sorted(nodes_in_mono_sum):
     nodes_entropy = [0] * len(nodes_in_mono_sum)
     for i in range(len(nodes_in_mono_sum)):
-        node_mono_weihgt = nodes_in_mono_sum[i]
-        nodes_entropy[i] = entropy([node_mono_weihgt, 1 - node_mono_weihgt], base=2)
+        node_mono_wiehgt = nodes_in_mono_sum[i]
+        nodes_entropy[i] = entropy([node_mono_wiehgt, 1 - node_mono_wiehgt], base=2)
     return nodes_entropy
 
 
-def nodes_mono_in_wights_sorted(weights_mat, nodes_colors):
-    num_of_nodes = len(nodes_colors)
+def nodes_mono_in_wights_sorted(weights_mat, nodes_opinions):
+    num_of_nodes = len(nodes_opinions)
     nodes_mono_in_weights = [0] * num_of_nodes
     nodes_colorful_weights = [0] * num_of_nodes
     for i in range(num_of_nodes):
-        node_color = nodes_colors[i]
+        node_color = nodes_opinions[i]
         mono_weight = 0
         colorful_weight = 0
         for j in range(num_of_nodes):
-            if i != j and node_color == nodes_colors[j]:
+            if i != j and node_color == nodes_opinions[j]:
                 mono_weight += weights_mat[j][i]
-            elif i != j and node_color != nodes_colors[j]:
+            elif i != j and node_color != nodes_opinions[j]:
                 colorful_weight += weights_mat[j][i]
         nodes_mono_in_weights[i] = mono_weight
         nodes_colorful_weights[i] = colorful_weight
@@ -132,7 +135,7 @@ def out_sum_log_log(sorted_out_sums):
     return log_out_sums
 
 
-def get_edges_count_and_colors(weight_mat, nodes_colors, zero_thresh):
+def get_edges_count_and_colors(weight_mat, nodes_opinions, zero_thresh):
     count_mono_edges = 0
     count_colorful_edges = 0
     mono_edges_thresh_mat = np.zeros_like(weight_mat)
@@ -140,7 +143,7 @@ def get_edges_count_and_colors(weight_mat, nodes_colors, zero_thresh):
     for i in range(len(weight_mat)):
         for j in  range(len(weight_mat)):
             if  weight_mat[i][j] > zero_thresh:
-                if nodes_colors[i] == nodes_colors[j]:
+                if nodes_opinions[i] == nodes_opinions[j]:
                     count_mono_edges += 1
                     mono_edges_thresh_mat[i][j] = 1
                 else:
@@ -179,20 +182,23 @@ def global_disagreement(exp_opinions, weights_mat):
         global_disagr += local_disagreement(i, exp_opinions, weights_mat)
     return global_disagr
 
-def nodes_mix(nodes_cont_opinions, weights_mat):
+def nodes_feed_mean_and_distance_from_feed_mean(nodes_cont_opinions, weights_mat):
     num_of_nodes = len(weights_mat)
-    nodes_feed_mix = []
+    distance_from_feed_mean = []
+    nodes_feed_mean = []
     for node in range(num_of_nodes):
-        node_local_mix= 0
+        curr_nodes_distance_from_feed_mean = 0
         node_cont_opinion = nodes_cont_opinions[node]
         for i in range(num_of_nodes):
-            node_local_mix += weights_mat[i][node] * nodes_cont_opinions[i]
-        nodes_feed_mix.append(node_cont_opinion - node_local_mix)
-    return nodes_feed_mix
+            curr_nodes_distance_from_feed_mean += weights_mat[i][node] * nodes_cont_opinions[i]
+        distance_from_feed_mean.append(node_cont_opinion - curr_nodes_distance_from_feed_mean)
+        nodes_feed_mean.append(curr_nodes_distance_from_feed_mean)
+    return nodes_feed_mean, distance_from_feed_mean
 
-def get_measurements(weights_mat, adj_mat, nodes_colors, zero_thresh, insights_dict, norm):
-    num_of_nodes = len(nodes_colors)
-
+def get_measurements(weights_mat, adj_mat, nodes_opinions, insights_dict):
+    num_of_nodes = len(nodes_opinions)
+    zero_thresh = 1e-4
+    norm = 2
     not_zero_edges_count = 0
     thresh_edges_count = 0
     total_mono_count = 0
@@ -216,17 +222,17 @@ def get_measurements(weights_mat, adj_mat, nodes_colors, zero_thresh, insights_d
     nodes_local_disagreement = np.zeros(num_of_nodes)
 
     for i in range(num_of_nodes):
-        nodes_local_disagreement[i] = local_disagreement(i, nodes_colors, weights_mat)
+        nodes_local_disagreement[i] = local_disagreement(i, nodes_opinions, weights_mat)
 
-        curr_node_color = nodes_colors[i]
+        curr_node_color = nodes_opinions[i]
         curr_node_in_edges = adj_mat[:, i].flatten()
         in_edges_indexes = np.where(curr_node_in_edges > 0)[0]
         thresh_in_edges_indexes = np.where(curr_node_in_edges > zero_thresh)[0]
-        is_all_view_mono = all(curr_node_color == nodes_colors[node] for node in in_edges_indexes)
+        is_all_view_mono = all(curr_node_color == nodes_opinions[node] for node in in_edges_indexes)
         if is_all_view_mono:
             nodes_with_mono_view_count += 1
             thresh_nodes_with_mono_view_count += 1
-        elif all(curr_node_color == nodes_colors[node] for node in thresh_in_edges_indexes):
+        elif all(curr_node_color == nodes_opinions[node] for node in thresh_in_edges_indexes):
             thresh_nodes_with_mono_view_count += 1
 
         for j in range(num_of_nodes):
@@ -239,13 +245,13 @@ def get_measurements(weights_mat, adj_mat, nodes_colors, zero_thresh, insights_d
                     thresh_edges_count += 1
                     thresh_nodes_total_out_sum[i] += edge_weight
                     thresh_nodes_total_in_sum[j] += edge_weight
-                    if nodes_colors[i] == nodes_colors[j]:
+                    if nodes_opinions[i] == nodes_opinions[j]:
                         thresh_total_mono_count += 1
                         thresh_total_mono_weight += edge_weight
                         thresh_nodes_out_mono_sum[i] += edge_weight
                         thresh_nodes_in_mono_sum[j] += edge_weight
 
-                if nodes_colors[i] == nodes_colors[j]:
+                if nodes_opinions[i] == nodes_opinions[j]:
                     total_mono_count += 1
                     total_mono_weight += edge_weight
                     nodes_out_mono_sum[i] += edge_weight
@@ -307,11 +313,12 @@ def get_measurements(weights_mat, adj_mat, nodes_colors, zero_thresh, insights_d
     insights_dict[strs.str_edge_weight].append(weights_mat.flatten())
     insights_dict[strs.str_local_disagreement].append(nodes_local_disagreement)
 
-    global_disag = global_disagreement(nodes_colors, weights_mat)
+    global_disag = global_disagreement(nodes_opinions, weights_mat)
     insights_dict[strs.str_global_disagreement].append(global_disag)
 
-    nodes_curr_mix = nodes_mix(nodes_colors, weights_mat)
-    insights_dict[strs.str_nodes_mix].append(np.asarray(nodes_curr_mix))
+    nodes_feed_mean, nodes_distance_from_feed_mean = nodes_feed_mean_and_distance_from_feed_mean(nodes_opinions, weights_mat)
+    insights_dict[strs.str_nodes_distance_feed_mean].append(np.asarray(nodes_distance_from_feed_mean))
+    insights_dict[strs.str_nodes_feed_mean].append(np.asarray(nodes_feed_mean))
 
     return insights_dict
 
@@ -353,12 +360,11 @@ def initiate_insights_dict():
     insights_dict[strs.str_mat_norm] = []
     insights_dict[strs.str_local_disagreement] = []
     insights_dict[strs.str_global_disagreement] = []
-    insights_dict[strs.str_polarization] = []
-    insights_dict[strs.str_expressed_opinions] = []
     insights_dict[strs.str_edge_weight] = []
     insights_dict[strs.str_eig_val] = []
     insights_dict[strs.str_eig_vec] = []
-    insights_dict[strs.str_nodes_mix] = []
+    insights_dict[strs.str_nodes_distance_feed_mean] = []
+    insights_dict[strs.str_nodes_feed_mean] = []
 
     return insights_dict
 
@@ -386,12 +392,12 @@ def blocks_insights(weights_blocks_mat, iteration):
     BB_nodes_out_sum_sorted = -np.sort(-BB_nodes_out_sum)
 
     nodes_arr = range(half_num_of_nodes)
-    Plots.plot_all(nodes_arr, [RR_nodes_out_sum_sorted, BB_nodes_out_sum_sorted], 'same color nodes sorted by out-weight',
+    Plots.plot_all(nodes_arr, [RR_nodes_out_sum_sorted, BB_nodes_out_sum_sorted], 'same opinion nodes sorted by out-weight',
                    'out sum',
                    'out-edges weights sum iteration ' + str(iteration), ['RR', 'BB'], 'Iteration')
 
     Plots.plot_all_symlog_loglog(nodes_arr, [RR_nodes_out_sum_sorted, BB_nodes_out_sum_sorted],
-                                 'same color log_matplot nodes sorted by out-weight',
+                                 'same opinion log_matplot nodes sorted by out-weight',
                                  'log out sum', 'log log matplot symlog iteration' + str(iteration), ['RR', 'BB'], 'Iteration')
 
 

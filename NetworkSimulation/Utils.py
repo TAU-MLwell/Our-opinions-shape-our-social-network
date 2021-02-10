@@ -1,7 +1,9 @@
 from random import sample
 import numpy as np
 import matplotlib.pyplot as plt
+import networkx as nx
 import random
+import Plots
 
 
 def get_nodes_log_enumeration(num_of_nodes):
@@ -24,19 +26,19 @@ def count_mutual_friends(adj_mat):
     return mutual_count_mac_sym
 
 
-def draw_graph(G, color_map, title):
+def draw_graph(G, opinions_map, title):
     pos = nx.spring_layout(G, k=0.9, iterations=20)
     plt.title(title)
-    nx.draw(G, pos, node_color=color_map , with_labels=True, font_color='white')
+    nx.draw(G, pos, node_color=opinions_map , with_labels=True, font_color='white')
     plt.show()
 
 
-def get_mono_edges_mat(nodes_colors): #can optimize by doing only upper triangle and reflect
-    num_of_nodes = nodes_colors.size
+def get_mono_edges_mat(nodes_opinions):
+    num_of_nodes = nodes_opinions.size
     mono_edges_mat = np.zeros(shape=(num_of_nodes, num_of_nodes))
     for i in range(num_of_nodes):
         for j in range(num_of_nodes):
-            if nodes_colors[i] == nodes_colors[j]:
+            if nodes_opinions[i] == nodes_opinions[j]:
                 mono_edges_mat[i][j] = 1
 
     return mono_edges_mat.astype(bool)
@@ -70,7 +72,7 @@ def get_two_out_layers_around_node(weight_mat, node, zero_thresh):
     return node_layers_adj_mat
 
 
-def draw_directed_graph(G, nodes_colors):
+def draw_directed_graph(G, nodes_opinions):
     pos = nx.layout.spring_layout(G)
 
     node_sizes = [3 + 10 * i for i in range(len(G))]
@@ -78,7 +80,6 @@ def draw_directed_graph(G, nodes_colors):
     edge_colors = range(2, M + 2)
     edge_alphas = [(5 + i) / (M + 4) for i in range(M)]
 
-    nodes = nx.draw_networkx_nodes(G, pos, node_size=node_sizes, node_color=nodes_colors)
     edges = nx.draw_networkx_edges(
         G,
         pos,
@@ -89,13 +90,8 @@ def draw_directed_graph(G, nodes_colors):
         edge_cmap=plt.cm.Blues,
         width=2,
     )
-    # # set alpha value for each edge
     for i in range(M):
         edges[i].set_alpha(edge_alphas[i])
-
-    # pc = mpl.collections.PatchCollection(edges, cmap=plt.cm.Blues)
-    # pc.set_array(edge_colors)
-    # plt.colorbar(pc)
 
     ax = plt.gca()
     ax.set_axis_off()
@@ -117,165 +113,152 @@ def graph_from_weights_mat(weights_mat, zero_thresh):
     return G
 
 
-def set_nodes_color_map(nodes_colors, color1, color2):
+def set_nodes_opinions_map(nodes_opinions, opinion1, opinion2):
     color_map = []
-    for idx, color in enumerate(nodes_colors):
-        if color == 0 :
-            color_map.append(color1)
+    for idx, color in enumerate(nodes_opinions):
+        if color == 0:
+            color_map.append(opinion1)
         else:
-            color_map.append(color2)
+            color_map.append(opinion2)
     return color_map
 
 
-def arrange_weights_mat_by_two_colors(weights_mat, nodes_colors):
+def arrange_weights_mat_by_two_opinions(weights_mat, nodes_opinions):
     num_of_nodes = len(weights_mat)
-    indexes_of_one = np.where(nodes_colors == 1)[0]
-    indexes_of_zero = np.where(nodes_colors == 0)[0]
-    indexes_by_color = np.concatenate((indexes_of_zero, indexes_of_one), axis=None)
+    indexes_of_one = np.where(nodes_opinions == 1)[0]
+    indexes_of_zero = np.where(nodes_opinions == 0)[0]
+    indexes_by_opinion = np.concatenate((indexes_of_zero, indexes_of_one), axis=None)
     block_weights_mat = np.zeros(shape=(num_of_nodes, num_of_nodes))
     for i in range(num_of_nodes):
         for j in range(num_of_nodes):
-            block_weights_mat[i][j] = weights_mat[indexes_by_color[i]][indexes_by_color[j]]
+            block_weights_mat[i][j] = weights_mat[indexes_by_opinion[i]][indexes_by_opinion[j]]
     return block_weights_mat
 
-def arrange_weights_mat_by_multi_colors(weights_mat, nodes_colors):
+def arrange_weights_mat_by_multi_opinion(weights_mat, nodes_opinions):
     num_of_nodes = len(weights_mat)
-    indexes_of_three = np.where(nodes_colors == 3)[0]
-    indexes_of_two = np.where(nodes_colors == 2)[0]
-    indexes_of_one = np.where(nodes_colors == 1)[0]
-    indexes_of_zero = np.where(nodes_colors == 0)[0]
-    indexes_by_color = np.concatenate((indexes_of_zero, indexes_of_one, indexes_of_two, indexes_of_three), axis=None)
+    indexes_of_three = np.where(nodes_opinions == 3)[0]
+    indexes_of_two = np.where(nodes_opinions == 2)[0]
+    indexes_of_one = np.where(nodes_opinions == 1)[0]
+    indexes_of_zero = np.where(nodes_opinions == 0)[0]
+    indexes_by_opinion = np.concatenate((indexes_of_zero, indexes_of_one, indexes_of_two, indexes_of_three), axis=None)
     block_weights_mat = np.zeros(shape=(num_of_nodes, num_of_nodes))
     for i in range(num_of_nodes):
         for j in range(num_of_nodes):
-            block_weights_mat[i][j] = weights_mat[indexes_by_color[i]][indexes_by_color[j]]
+            block_weights_mat[i][j] = weights_mat[indexes_by_opinion[i]][indexes_by_opinion[j]]
     return block_weights_mat
 
-def arrange_weights_mat_by_cont_colors(weights_mat, nodes_colors):
+def arrange_weights_mat_by_cont_colors(weights_mat, nodes_opinions):
     num_of_nodes = len(weights_mat)
-    sorted_indexes_by_color = np.argsort(nodes_colors)
+    sorted_indexes_by_opinion = np.argsort(nodes_opinions)
     block_weights_mat = np.zeros(shape=(num_of_nodes, num_of_nodes))
     for i in range(num_of_nodes):
         for j in range(num_of_nodes):
-            block_weights_mat[i][j] = weights_mat[sorted_indexes_by_color[i]][sorted_indexes_by_color[j]]
+            block_weights_mat[i][j] = weights_mat[sorted_indexes_by_opinion[i]][sorted_indexes_by_opinion[j]]
     return block_weights_mat
 
-def arrange_weights_two_opinions(weights_mat, first_topic_opinions, second_topic_opinions):
+def arrange_weights_two_topics(weights_mat, first_topic_opinions, second_topic_opinions):
     num_of_nodes = len(weights_mat)
+
     first_zero = set(np.where(first_topic_opinions == 0)[0])
     first_one = set(np.where(first_topic_opinions == 1)[0])
+    first_two = set(np.where(first_topic_opinions == 2)[0])
+
     second_zero = set(np.where(second_topic_opinions == 0)[0])
     second_one = set(np.where(second_topic_opinions == 1)[0])
+    second_two = set(np.where(second_topic_opinions == 2)[0])
+
     zerozero = list(first_zero.intersection(second_zero))
     zeroone = list(first_zero.intersection(second_one))
+    zerotwo = list(first_zero.intersection(second_two))
+
     onezero = list(first_one.intersection(second_zero))
     oneone = list(first_one.intersection(second_one))
-    indexes_by_color = np.concatenate((zerozero, zeroone, onezero, oneone), axis=None)
+    onetwo = list(first_one.intersection(second_two))
+
+    twozero = list(first_two.intersection(second_zero))
+    twoone = list(first_two.intersection(second_one))
+    twotwo = list(first_two.intersection(second_two))
+
+
+    indexes_by_opinion = np.concatenate((zerozero, zeroone, zerotwo, onezero, oneone, onetwo, twozero, twoone, twotwo), axis=None)
     block_weights_mat = np.zeros(shape=(num_of_nodes, num_of_nodes))
     for i in range(num_of_nodes):
         for j in range(num_of_nodes):
-            block_weights_mat[i][j] = weights_mat[indexes_by_color[i]][indexes_by_color[j]]
+            block_weights_mat[i][j] = weights_mat[indexes_by_opinion[i]][indexes_by_opinion[j]]
     return block_weights_mat
 
 
-def arrage_wiehgts_mat_by_colors_FJ(weights_mat, nodes_colors):
-    num_of_nodes = len(weights_mat)
-    indexes_of_one = np.where(nodes_colors > 0)[0]
-    indexes_of_zero = np.where(nodes_colors <= 0)[0]
-    indexes_by_color = np.concatenate((indexes_of_zero, indexes_of_one), axis=None)
-    block_weights_mat = np.zeros(shape=(num_of_nodes, num_of_nodes))
-    for i in range(num_of_nodes):
-        for j in range(num_of_nodes):
-            block_weights_mat[i][j] = weights_mat[indexes_by_color[i]][indexes_by_color[j]]
-    return block_weights_mat
-
-
-# def init_random_nodes_colors(num_of_nodes):
-#     colors_arr = np.zeros(shape=(num_of_nodes, ))
-#     # colors_arr[: int(num_of_nodes / 2)] = 0
-#     # colors_arr[int(num_of_nodes / 2): num_of_nodes] = 1
-#     second_color_indexes = sample(list(range(num_of_nodes)), int(num_of_nodes/2))
-#     np.put(colors_arr, second_color_indexes, 1)
-#     return colors_arr
-#
-
-def init_random_nodes_d_colors(num_of_nodes, d):
-    colors_arr = np.zeros(shape=(num_of_nodes, ))
+def init_random_nodes_d_opinions(num_of_nodes, d):
+    opinions_arr = np.zeros(shape=(num_of_nodes, ))
     n = num_of_nodes
     group_size = int(num_of_nodes/d)
     set_indexes = set(list(range(n)))
     for i in range(d):
-        curr_color_indexes = sample(set_indexes, group_size)
-        np.put(colors_arr, curr_color_indexes, i)
-        set_indexes = set_indexes - set(curr_color_indexes)
-    return colors_arr
+        curr_opinion_indexes = sample(set_indexes, group_size)
+        np.put(opinions_arr, curr_opinion_indexes, i)
+        set_indexes = set_indexes - set(curr_opinion_indexes)
+    return opinions_arr
 
 
-def compute_nodes_two_colors_scores_matrix(nodes_colors_array, diff_color_const):
-    color_scores_matrix = np.zeros(shape=(len(nodes_colors_array), len(nodes_colors_array)))
-    same_color_score = 1.0
-    diff_color_score = diff_color_const
-    for i in range(len(nodes_colors_array)):
-        for j in range(len(nodes_colors_array)):
-            if nodes_colors_array[i] == nodes_colors_array[j]:
-                color_scores_matrix[i][j] = same_color_score
+def compute_nodes_two_opinions_scores_matrix(nodes_opinions_array, q):
+    opinion_scores_matrix = np.zeros(shape=(len(nodes_opinions_array), len(nodes_opinions_array)))
+    for i in range(len(nodes_opinions_array)):
+        for j in range(len(nodes_opinions_array)):
+            if nodes_opinions_array[i] == nodes_opinions_array[j]:
+                opinion_scores_matrix[i][j] = 1 + q
             else:
-                color_scores_matrix[i][j] = diff_color_score
-    return color_scores_matrix
+                opinion_scores_matrix[i][j] = 1
+    return opinion_scores_matrix
 
 def init_edge_weights_from_adj_mat(adj_mat):
-    weights_mat = np.zeros(shape = (len(adj_mat),len(adj_mat)))
-    for node in range(len(adj_mat)):
-        frnds_indexes = list((np.where(adj_mat[node] == 1)[0]))
-        num_frnds = len(frnds_indexes)
-        weights = list(np.random.dirichlet(np.ones(num_frnds), size=1))
-        node_vec = np.zeros(shape=(len(adj_mat),))
-        np.put(node_vec, frnds_indexes, weights)
+    num_friends = len(adj_mat)
+    weights_mat = np.zeros(shape = (num_friends, num_friends))
+    for node in range(num_friends):
+        friends_indexes = list((np.where(adj_mat[node] == 1)[0]))
+        weights = list(np.random.dirichlet(np.ones(num_friends), size=1))
+        node_vec = np.zeros(shape=(num_friends,))
+        np.put(node_vec, friends_indexes, weights)
         weights_mat[:, node] = node_vec
     return weights_mat
 
-def compute_nodes_multiple_opinions_scores(nodes_opinions, medium_const, extreeme_conts):
-    num_of_nodes = len(nodes_opinions)
-    color_scores_matrix = np.zeros(shape=(num_of_nodes, num_of_nodes))
-    same_color_score = 1.0
-    close_color_score = medium_const
-    diff_color_score = extreeme_conts
-    for i in range(num_of_nodes):
-        for j in range(num_of_nodes):
-            if nodes_opinions[i] == nodes_opinions[j]:
-                color_scores_matrix[i][j] = same_color_score
-            elif np.abs(nodes_opinions[i] - nodes_opinions[j]) == 1:
-                color_scores_matrix[i][j] = close_color_score
+def compute_nodes_multiple_opinions_scores(nodes_opinions_array, q_1, q_2):
+    opinions_scores_matrix = np.zeros(shape=(len(nodes_opinions_array), len(nodes_opinions_array)))
+    for i in range(len(nodes_opinions_array)):
+        for j in range(len(nodes_opinions_array)):
+            if nodes_opinions_array[i] == nodes_opinions_array[j]:
+                opinions_scores_matrix[i][j] = 1 + q_1
+            elif np.abs(nodes_opinions_array[i] - nodes_opinions_array[j]) == 1:
+                opinions_scores_matrix[i][j] = 1 + q_2
             else:
-                color_scores_matrix[i][j] = diff_color_score
-    return color_scores_matrix
+                opinions_scores_matrix[i][j] = 1
+    return opinions_scores_matrix
 
 def init_continuous_nodes_opinions(num_of_nodes):
     opinions_arr = np.zeros(shape=(num_of_nodes, ))
     for i in range(num_of_nodes):
-        opinions_arr[i] = random.uniform(0, 1)
+        opinions_arr[i] = random.uniform(-1, 1)
     return opinions_arr
 
-def compute_nodes_continuous_diff_op_scores(nodes_colors_array):
-    color_scores_matrix = np.zeros(shape=(len(nodes_colors_array), len(nodes_colors_array)))
-    for i in range(len(nodes_colors_array)):
-        for j in range(len(nodes_colors_array)):
-            color_scores_matrix[i][j] = 1 - (np.abs(nodes_colors_array[i] - nodes_colors_array[j]))
-    return color_scores_matrix
+def compute_nodes_continuous_diff_op_scores(nodes_opinions_array):
+    opinions_scores_matrix = np.zeros(shape=(len(nodes_opinions_array), len(nodes_opinions_array)))
+    for i in range(len(nodes_opinions_array)):
+        for j in range(len(nodes_opinions_array)):
+            opinions_scores_matrix[i][j] = 2 - (np.abs(nodes_opinions_array[i] - nodes_opinions_array[j]))
+    return opinions_scores_matrix
 
-def compute_nodes_multiple_topics_scores(first_topic_opinions, second_topic_opinions):
+def compute_nodes_multiple_topics_scores(first_topic_opinions, second_topic_opinions, q_1, q_2):
     num_of_nodes = len(first_topic_opinions)
-    color_scores_matrix = np.zeros(shape=(num_of_nodes, num_of_nodes))
+    opinions_scores_matrix = np.zeros(shape=(num_of_nodes, num_of_nodes))
     for i in range(num_of_nodes):
         for j in range(num_of_nodes):
             if (first_topic_opinions[i] == first_topic_opinions[j])\
                     and (second_topic_opinions[i] == second_topic_opinions[j]):
-                color_scores_matrix[i][j] = 1
+                opinions_scores_matrix[i][j] = 1 + q_1
             elif first_topic_opinions[i] == first_topic_opinions[j] or second_topic_opinions[i] == second_topic_opinions[j]:
-                color_scores_matrix[i][j] = 0.5
+                opinions_scores_matrix[i][j] = 1 + q_2
             else:
-                color_scores_matrix[i][j] = 0.2
-    return color_scores_matrix
+                opinions_scores_matrix[i][j] = 1
+    return opinions_scores_matrix
 
 def sort_lists_by_listargsort(local_dis_list_of_lists, nodes_cont_opinions):
     nodes_soretd_indexes = np.argsort(nodes_cont_opinions)
@@ -283,3 +266,8 @@ def sort_lists_by_listargsort(local_dis_list_of_lists, nodes_cont_opinions):
     for lst in local_dis_list_of_lists:
         sorted.append(lst[nodes_soretd_indexes])
     return sorted
+
+def print_blocks(weights_mat, nodes_opinions, modeltype):
+    weights_blocks_map = arrange_weights_mat_by_multi_opinion(weights_mat, nodes_opinions)
+    log_weights_pixel_map = np.log(weights_blocks_map)
+    Plots.plot_mat(log_weights_pixel_map, 'nodes sorted by opinion', 'nodes sorted by opinion', 'Log blocks weights iteration: ' + str(i))
