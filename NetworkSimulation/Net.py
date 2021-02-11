@@ -34,7 +34,6 @@ def simulation(num_of_nodes, num_of_iterations, take_measures_every, model_type)
     weights_mat = Utils.init_edge_weights_from_adj_mat(adj_mat)
     initial_wights_mat_copy = copy.deepcopy(weights_mat)
     nodes_opinions = []
-    opinions_scores_mat = np.zeros(shape=(num_of_nodes, num_of_nodes))
     if model_type == 1:
         nodes_opinions = Utils.init_random_nodes_d_opinions(num_of_nodes, 2)
         opinions_scores_mat = Utils.compute_nodes_two_opinions_scores_matrix(nodes_opinions, q_1)
@@ -43,7 +42,7 @@ def simulation(num_of_nodes, num_of_iterations, take_measures_every, model_type)
         opinions_scores_mat = Utils.compute_nodes_continuous_diff_op_scores(nodes_opinions)
     elif model_type == 3:
         nodes_opinions = Utils.init_random_nodes_d_opinions(num_of_nodes, 4)
-        opinions_scores_mat = Utils.compute_nodes_multiple_opinions_scores(nodes_opinions, q_1, 1_2)
+        opinions_scores_mat = Utils.compute_nodes_multiple_opinions_scores(nodes_opinions, q_1, q_2)
     else:
         first_topic_nodes_opinions = Utils.init_random_nodes_d_opinions(num_of_nodes, 3)
         second_topic_nodes_opinions = Utils.init_random_nodes_d_opinions(num_of_nodes, 3)
@@ -97,5 +96,11 @@ def simulation(num_of_nodes, num_of_iterations, take_measures_every, model_type)
                       'local disagreement sorted', iterations_arr, 'Iteration')
 
     return
-
+"""
+model types:
+1 - basic (two opinions)
+2 - continuous opinions
+3 - multiple opinions
+4 - multiple topics
+"""
 simulation(num_of_nodes=100, num_of_iterations=100, take_measures_every=10, model_type = 1)

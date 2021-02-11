@@ -147,7 +147,7 @@ def arrange_weights_mat_by_multi_opinion(weights_mat, nodes_opinions):
             block_weights_mat[i][j] = weights_mat[indexes_by_opinion[i]][indexes_by_opinion[j]]
     return block_weights_mat
 
-def arrange_weights_mat_by_cont_colors(weights_mat, nodes_opinions):
+def arrange_weights_mat_by_cont_opinions(weights_mat, nodes_opinions):
     num_of_nodes = len(weights_mat)
     sorted_indexes_by_opinion = np.argsort(nodes_opinions)
     block_weights_mat = np.zeros(shape=(num_of_nodes, num_of_nodes))
@@ -156,7 +156,7 @@ def arrange_weights_mat_by_cont_colors(weights_mat, nodes_opinions):
             block_weights_mat[i][j] = weights_mat[sorted_indexes_by_opinion[i]][sorted_indexes_by_opinion[j]]
     return block_weights_mat
 
-def arrange_weights_two_topics(weights_mat, first_topic_opinions, second_topic_opinions):
+def arrange_weights_multi_topics(weights_mat, first_topic_opinions, second_topic_opinions):
     num_of_nodes = len(weights_mat)
 
     first_zero = set(np.where(first_topic_opinions == 0)[0])
@@ -267,7 +267,16 @@ def sort_lists_by_listargsort(local_dis_list_of_lists, nodes_cont_opinions):
         sorted.append(lst[nodes_soretd_indexes])
     return sorted
 
-def print_blocks(weights_mat, nodes_opinions, modeltype):
-    weights_blocks_map = arrange_weights_mat_by_multi_opinion(weights_mat, nodes_opinions)
+def print_blocks(weights_mat, nodes_opinions, model_type):
+    if model_type == 1:
+        weights_blocks_map = arrange_weights_mat_by_two_opinions(weights_mat, nodes_opinions)
+    elif model_type == 2:
+        weights_blocks_map = arrange_weights_mat_by_cont_opinions(weights_mat, nodes_opinions)
+    elif model_type == 3:
+        weights_blocks_map = arrange_weights_mat_by_multi_opinion(weights_mat, nodes_opinions)
+    else:
+        weights_blocks_map = arrange_weights_multi_topics(weights_mat, nodes_opinions)
+
     log_weights_pixel_map = np.log(weights_blocks_map)
     Plots.plot_mat(log_weights_pixel_map, 'nodes sorted by opinion', 'nodes sorted by opinion', 'Log blocks weights iteration: ' + str(i))
+    return log_weights_pixel_map
